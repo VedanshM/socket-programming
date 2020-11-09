@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#define htonll(x) ((1 == htonl(1)) ? (x) : ((uint64_t)htonl((x)&0xFFFFFFFF) << 32) | htonl((x) >> 32))
+#define ntohll(x) ((1 == ntohl(1)) ? (x) : ((uint64_t)ntohl((x)&0xFFFFFFFF) << 32) | ntohl((x) >> 32))
 #define min(a, b) (a < b ? a : b)
 #define max(a, b) (a > b ? a : b)
 
@@ -33,7 +35,7 @@ int main(int argc, char const *argv[]) {
 	}
 
 	memset(&serv_addr, '0', sizeof(serv_addr)); // to make sure the struct is empty. Essentially sets sin_zero as 0
-												// which is meant to be, and rest is defined below
+	// which is meant to be, and rest is defined below
 
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(PORT);
@@ -68,11 +70,9 @@ int main(int argc, char const *argv[]) {
 		if (all_good(sock)) {
 			printf("ok\n");
 			fflush(0);
-			uint32_t bytes_left = 0, file_size;
+			uint64_t bytes_left = 0, file_size;
 			read(sock, &file_size, sizeof(file_size));
-			// printf("%d", file_size);
-			file_size = ntohl(file_size);
-			// printf("%d", file_size);
+			file_size = ntohll(file_size);
 
 			int fd = open(argv[i], O_CREAT | O_TRUNC | O_WRONLY, 0644);
 			bytes_left = file_size;
@@ -80,8 +80,8 @@ int main(int argc, char const *argv[]) {
 				write(fd, buf, n);
 				bytes_left -= n;
 				fprintf(stderr, "\r\033[K"
-								"Received: %d/%d bytes",
-						file_size - bytes_left, file_size);
+								"Received: %ld/%ld bytes  %.2f%%",
+						file_size - bytes_left, file_size, 100 - (bytes_left * 100.0f) / file_size);
 				fflush(0);
 			}
 			printf("\n");
