@@ -8,8 +8,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define htonll(x) ((1 == htonl(1)) ? (x) : ((uint64_t)htonl((x)&0xFFFFFFFF) << 32) | htonl((x) >> 32))
-#define ntohll(x) ((1 == ntohl(1)) ? (x) : ((uint64_t)ntohl((x)&0xFFFFFFFF) << 32) | ntohl((x) >> 32))
 #define min(a, b) (a < b ? a : b)
 #define max(a, b) (a > b ? a : b)
 
@@ -22,7 +20,7 @@ void send_ack(int sock, int good) {
 	if (good) {
 		write(sock, "ok", sizeof("ok"));
 	} else {
-		write(sock, "err", sizeof("err"));
+		write(sock, "er", sizeof("er"));
 	}
 }
 
@@ -86,10 +84,11 @@ int main(int argc, char const *argv[]) {
 				send_ack(connd_sock, 0);
 			} else {
 				send_ack(connd_sock, 1);
-				uint64_t file_size = lseek(fd, 0, SEEK_END);
+				uint32_t file_size = lseek(fd, 0, SEEK_END);
 				lseek(fd, 0, SEEK_SET);
-				printf("sending %ldB...\n", file_size);
-				file_size = htonll(file_size);
+				printf("sending %dB...\n", file_size);
+				file_size = htonl(file_size);
+				printf("[[%ud]]", file_size);
 				write(connd_sock, &file_size, sizeof(file_size));
 				while ((n = read(fd, buf, BUF_SIZE)) > 0) {
 					write(connd_sock, buf, n);

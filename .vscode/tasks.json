@@ -3,9 +3,9 @@
         {
             "label": "compile",
             "type": "shell",
-            "command": "gcc ${file} -o ${fileBasenameNoExtension} ",
+            "command": "gcc ${file} -o ${fileBasenameNoExtension}.out ",
             "presentation": {
-                "reveal": "silent",
+                "reveal": "always",
                 "panel": "shared",
                 "focus": false,
                 "echo": true
@@ -24,7 +24,7 @@
         {
             "label": "compile (debug)",
             "type": "shell",
-            "command": "gcc ${file} -g -o ${fileBasenameNoExtension} ",
+            "command": "gcc ${file} -g -o ${fileBasenameNoExtension}.out ",
             "presentation": {
                 "reveal": "silent",
                 "panel": "shared",

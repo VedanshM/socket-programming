@@ -9,8 +9,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define htonll(x) ((1 == htonl(1)) ? (x) : ((uint64_t)htonl((x)&0xFFFFFFFF) << 32) | htonl((x) >> 32))
-#define ntohll(x) ((1 == ntohl(1)) ? (x) : ((uint64_t)ntohl((x)&0xFFFFFFFF) << 32) | ntohl((x) >> 32))
 #define min(a, b) (a < b ? a : b)
 #define max(a, b) (a > b ? a : b)
 
@@ -20,8 +18,8 @@
 char buf[BUF_SIZE + 1];
 
 char all_good(int sock) {
-	char c[5] = {0};
-	read(sock, c, 5);
+	char c[3] = {0};
+	read(sock, c, 3);
 	return strcmp(c, "ok") == 0;
 }
 
@@ -69,22 +67,28 @@ int main(int argc, char const *argv[]) {
 
 		if (all_good(sock)) {
 			printf("ok\n");
-			uint64_t bytes_left = 0, file_size;
+			fflush(0);
+			uint32_t bytes_left = 0, file_size;
 			read(sock, &file_size, sizeof(file_size));
-			file_size = bytes_left = ntohll(file_size);
+			// printf("%d", file_size);
+			file_size = ntohl(file_size);
+			// printf("%d", file_size);
 
 			int fd = open(argv[i], O_CREAT | O_TRUNC | O_WRONLY, 0644);
+			bytes_left = file_size;
 			while (bytes_left > 0 && (n = read(sock, buf, min(bytes_left, BUF_SIZE))) > 0) {
 				write(fd, buf, n);
 				bytes_left -= n;
-				printf("\r                                                            \r"
-					   "Received: %ld/%ld\n bytes",
-					   file_size - bytes_left, file_size);
+				fprintf(stderr, "\r\033[K"
+								"Received: %d/%d bytes",
+						file_size - bytes_left, file_size);
+				fflush(0);
 			}
+			printf("\n");
 			close(fd);
-			printf("File : %s transfer done.\n", argv[i]);
+			printf("Transfer done.\n\n");
 		} else {
-			printf("File not found !!\n");
+			printf("File not found !!\n\n");
 		}
 	}
 	close(sock);

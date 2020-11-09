@@ -8,10 +8,35 @@
             "name": "server debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/server",
+            "program": "${workspaceFolder}/server.out",
             "args": [],
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}/test/sdir",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "compile (debug)",
+            "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "client debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/client.out",
+            "args": [
+                "git.md",
+                "hihp",
+                "compression.md",
+            ],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}/test/cdir",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
